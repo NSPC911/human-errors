@@ -1,0 +1,65 @@
+[project]
+name = "human-errors"
+version = "0.0.1"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "NSPC911", email = "notsoprocoder911@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "rich>=14.2.0",
+]
+license = "MIT"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+all = [
+    "orjson>=3.11.4",
+    "toml>=0.10.2",
+]
+toml = [
+    "toml>=0.10.2",
+]
+orjson = [
+    "orjson>=3.11.4",
+]
+dev = [
+    "ruff>=0.14.2",
+    "ty>=0.0.1a24",
+]
+
+[tool.ruff.lint]
+select = [
+  "ASYNC251",
+  "ANN",
+  "COM819",
+  "C400",
+  "DOC",
+  "D404",
+  "E",
+  "F",
+  "I",
+  "N801", "N802", "N805",
+  "PLE1142",
+  "Q",
+  "SIM",
+  "TD",
+  "W",
+]
+ignore = ["W505", "E501", "ANN002", "ANN003", "TD002", "TD003"]
+preview = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+preview = true
+
+[tool.ty.rules]
+possibly-missing-import = "ignore"
+unresolved-reference = "ignore" # handled by ruff
+unresolved-attribute = "ignore"
