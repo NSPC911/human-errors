@@ -2,6 +2,10 @@ from os import path
 from pathlib import Path
 from typing import Iterable
 
+from rich.console import Console
+
+console = Console()
+
 
 def dump(
     doc_path: str | Path,
@@ -27,13 +31,11 @@ def dump(
     import inspect
 
     from rich import box
-    from rich.console import Console
     from rich.padding import Padding
     from rich.syntax import Syntax
     from rich.table import Table
     from rich.text import Text
 
-    console = Console()
     if doc_path == "<string>":
         console.print(
             "[red]Cannot point an exception stemming from inline code execution ([bright_blue]python -c[/] was most likely used)."
