@@ -1,16 +1,28 @@
 [project]
 name = "human-errors"
-version = "0.0.2"
-description = "Add your description here"
+version = "0.0.2.post1"
+description = "everyone makes mistakes, show the errors to them "
 readme = "README.md"
-authors = [
-    { name = "NSPC911", email = "notsoprocoder911@gmail.com" }
-]
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "NSPC911" }]
+keywords = ["exception", "config", "json", "yaml", "toml"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Utilities",
+  "Topic :: File Formats",
+  "Topic :: File Formats :: JSON",
+  "Topic :: Text Processing"
+]
 dependencies = [
     "rich>=14.2.0",
 ]
-license = "MIT"
+
+[project.urls]
+Issues = "https://github.com/NSPC911/human-errors/issues"
+Source = "https://github.com/NSPC911/human-errors"
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]

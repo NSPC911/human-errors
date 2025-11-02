@@ -4,7 +4,7 @@ requires-python = ">=3.12"
 
 [[package]]
 name = "human-errors"
-version = "0.0.2"
+version = "0.0.2.post1"
 source = { editable = "." }
 dependencies = [
     { name = "rich" },
