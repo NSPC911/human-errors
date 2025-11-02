@@ -56,8 +56,20 @@ def dump(
         exit(1)
 
     import linecache
+
     code_lines = linecache.getlines(str(doc_path))
     code = "".join(code_lines)
+
+    # Detect if error from within package
+    is_meta_error = False
+    try:
+        doc_path_normalized = Path(doc_path).resolve()
+        current_file = Path(__file__).resolve()
+        human_errors_dir = current_file.parent
+        is_meta_error = doc_path_normalized.parent == human_errors_dir
+    except Exception:
+        # If we can't determine, treat as regular error
+        is_meta_error = False
 
     if line_number < 1:
         dump(
@@ -93,8 +105,6 @@ def dump(
     prefix_width = rjust + 6  # "╭╴NNN │ "
     max_code_width = max(console.width - prefix_width, 40)
 
-    # Use Rich's approach: pass the ENTIRE file to Syntax with line_range
-    # This preserves all syntax context (like Rich does in lines 817-831)
     syntax = Syntax(
         code,
         Syntax.guess_lexer(str(doc_path)),
@@ -107,22 +117,23 @@ def dump(
         background_color="default",
     )
 
+    # Choose colors based on error type
+    error_color = "bright_magenta" if is_meta_error else "bright_red"
+    separator_color = "bright_magenta" if is_meta_error else "bright_blue"
+    arrow_color = "bright_magenta" if is_meta_error else "bright_blue"
+
     console.print(
         rjust * " "
         + f"  [bright_blue]-->[/] [white]{path.realpath(doc_path)}:{line_number}:{column_number if column_number else ''}[/]"
     )
 
-    # Render the syntax object and extract segments
-
     segments = list(console.render(syntax, console.options))
 
-    # Group segments by line
     current_line_segments = []
     rendered_text_lines = []
 
     for segment in segments:
         if segment.text == "\n":
-            # End of line - convert segments to Text
             line_text = Text()
             for seg in current_line_segments:
                 line_text.append(seg.text, style=seg.style)
@@ -131,14 +142,12 @@ def dump(
         else:
             current_line_segments.append(segment)
 
-    # Don't forget the last line if it doesn't end with newline
     if current_line_segments:
         line_text = Text()
         for seg in current_line_segments:
             line_text.append(seg.text, style=seg.style)
         rendered_text_lines.append(line_text)
 
-    # Print each line with custom borders
     line_idx = 0
     for line_idx, source_line_num in enumerate(range(start_line, end_line + 1)):
         if line_idx >= len(rendered_text_lines):
@@ -152,32 +161,32 @@ def dump(
             startswith = "╭╴"
             has_past = True
             prefix = Text()
-            prefix.append(startswith, style="bright_red")
-            prefix.append(str(source_line_num).rjust(rjust), style="bright_red")
-            prefix.append(" │ ", style="bright_blue")
+            prefix.append(startswith, style=error_color)
+            prefix.append(str(source_line_num).rjust(rjust), style=error_color)
+            prefix.append(" │ ", style=separator_color)
             console.print(prefix, rendered_line, sep="")
             # if column
             if column_number:
                 prefix = Text()
-                prefix.append("│ ", style="bright_red")
+                prefix.append("│ ", style=error_color)
                 prefix.append(" " * rjust)
-                prefix.append(" │ ", style="bright_blue")
-                prefix.append(" " * (column_number - 1) + "↑", style="bright_red")
+                prefix.append(" │ ", style=separator_color)
+                prefix.append(" " * (column_number - 1) + "↑", style=error_color)
                 console.print(prefix)
         else:
             # Context line
             startswith = "│ " if has_past else "  "
             prefix = Text()
-            prefix.append(startswith, style="bright_red")
+            prefix.append(startswith, style=error_color)
             prefix.append(str(source_line_num).rjust(rjust), style="bright_blue")
-            prefix.append(" │ ", style="bright_blue")
+            prefix.append(" │ ", style=separator_color)
             console.print(prefix, rendered_line, sep="")
 
-    console.print(f"[bright_red]╰─{'─' * rjust}─❯[/] {cause}")
+    console.print(f"[{error_color}]╰─{'─' * rjust}─❯[/] {cause}")
     if extra:
         to_print = Table(
             box=box.ROUNDED,
-            border_style="bright_blue",
+            border_style="yellow" if is_meta_error else "bright_blue",
             show_header=False,
             expand=True,
             show_lines=True,
