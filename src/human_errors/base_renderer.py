@@ -35,7 +35,9 @@ def dump(
 
     console = Console()
     if doc_path == "<string>":
-        console.print("[red]Cannot point an exception stemming from inline code execution ([bright_blue]python -c[/] was most likely used).")
+        console.print(
+            "[red]Cannot point an exception stemming from inline code execution ([bright_blue]python -c[/] was most likely used)."
+        )
         console.print("")
         console.print(f"[red]Initial error:\n  {cause}[/]")
         exit(1)
@@ -51,7 +53,7 @@ def dump(
         dump(
             doc_path=frame.f_code.co_filename,
             cause=f"[salmon1]ValueError[/]: [bright_blue]doc_path[/] can only be a {type(str)} or {type(Path)} and not {type(doc_path)}",
-            line_number=frame.f_lineno
+            line_number=frame.f_lineno,
         )
         exit(1)
 
@@ -75,14 +77,14 @@ def dump(
         dump(
             frame.f_code.co_filename,
             f"[bright_blue]line_number[/] must be larger than or equal to 1. ([red]{line_number}[/] < 1)",
-            frame.f_lineno
+            frame.f_lineno,
         )
         exit(1)
     elif line_number > len(code_lines):
         dump(
             frame.f_code.co_filename,
-            f"[bright_blue]line_number[/] must be larger than the number of lines in the document. ([red]{line_number}[/] > {len(code_lines)})",
-            frame.f_lineno
+            f"[bright_blue]line_number[/] must be smaller than the number of lines in the document. ([red]{line_number}[/] > {len(code_lines)})",
+            frame.f_lineno,
         )
         exit(1)
 
@@ -117,14 +119,13 @@ def dump(
         background_color="default",
     )
 
-    # Choose colors based on error type
     error_color = "bright_magenta" if is_meta_error else "bright_red"
     separator_color = "bright_magenta" if is_meta_error else "bright_blue"
     arrow_color = "bright_magenta" if is_meta_error else "bright_blue"
 
     console.print(
         rjust * " "
-        + f"  [bright_blue]-->[/] [white]{path.realpath(doc_path)}:{line_number}:{column_number if column_number else ''}[/]"
+        + f"  [{arrow_color}]-->[/] [white]{path.realpath(doc_path)}:{line_number}{':' + str(column_number) if column_number is not None else ''}[/]"
     )
 
     segments = list(console.render(syntax, console.options))
@@ -166,7 +167,7 @@ def dump(
             prefix.append(" │ ", style=separator_color)
             console.print(prefix, rendered_line, sep="")
             # if column
-            if column_number:
+            if column_number is not None:
                 prefix = Text()
                 prefix.append("│ ", style=error_color)
                 prefix.append(" " * rjust)

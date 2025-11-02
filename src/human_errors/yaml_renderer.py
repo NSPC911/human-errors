@@ -12,7 +12,7 @@ except ModuleNotFoundError:
         __file__,
         "[bright_blue]pyyaml[/] is necessary for [light_sky_blue3]yaml_dump[/] to work.",
         line_number=7,
-        extra="If you are using a module that provides proper exceptions for YAML, please [u][link=https://github.com/NSPC911/human-errors/issues/new]open an issue[/][/], and I will take a look at it."
+        extra="If you are using a module that provides proper exceptions for YAML, please [u][link=https://github.com/NSPC911/human-errors/issues/new]open an issue[/][/], and I will take a look at it.",
     )
     exit(1)
 

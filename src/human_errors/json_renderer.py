@@ -6,6 +6,7 @@ from .base_renderer import dump
 
 try:
     import orjson
+
     JSONDecodeError = Union[json.JSONDecodeError, orjson.JSONDecodeError]
 except ModuleNotFoundError:
     JSONDecodeError = json.JSONDecodeError
@@ -16,7 +17,7 @@ def json_dump(
     doc_path: str | Path,
     context: int = 2,
     extra: Iterable | str | None = None,
-    exit_now: bool = False
+    exit_now: bool = False,
 ) -> None:
     """
     Dump an error message for json related errors
@@ -38,7 +39,7 @@ def json_dump(
         line_number=exception.lineno,
         column_number=exception.colno,
         context=context,
-        extra=extra
+        extra=extra,
     )
     if exit_now:
         exit(1)
