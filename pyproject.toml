@@ -20,12 +20,16 @@ build-backend = "uv_build"
 all = [
     "orjson>=3.11.4",
     "toml>=0.10.2",
+    "pyyaml>=6.0.0",
 ]
 toml = [
     "toml>=0.10.2",
 ]
 orjson = [
     "orjson>=3.11.4",
+]
+yaml = [
+    "pyyaml>=6.0.0",
 ]
 dev = [
     "ruff>=0.14.2",
