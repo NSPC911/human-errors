@@ -3,7 +3,7 @@ import traceback
 from pathlib import Path
 from typing import Iterable, Union
 
-from .base_renderer import dump
+from human_errors.base_renderer import dump
 
 try:
     import toml
