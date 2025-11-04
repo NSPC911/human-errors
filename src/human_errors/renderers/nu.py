@@ -61,7 +61,7 @@ def _render_nu_like(
 
     console.print(
         (rjust + 2) * " "
-        + f"╭─\\[[bright_cyan][b][u]{path.realpath(doc_path)}:{line_number}{':' + str(column_number) if column_number is not None else ''}[/][/][/]]"
+        + f"[{separator_color}]╭─\\[[/][bright_cyan][b][u]{path.realpath(doc_path)}:{line_number}{':' + str(column_number) if column_number is not None else ''}[/][/][/][{separator_color}]][/]"
     )
 
     segments = list(console.render(syntax, console.options))
@@ -129,7 +129,7 @@ def _render_nu_like(
 
     console.print(
         (rjust + 2) * " "
-        + "╰────"
+        + f"[{separator_color}]╰────[/]"
     )
 
     if extra:
