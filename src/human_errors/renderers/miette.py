@@ -17,7 +17,7 @@ def _render_miette(
     extra: Iterable[str] | str | None,
 ) -> None:
     """
-    Nushell/Pixi-like renderer: compact error format with minimal decoration.
+    Miette-like renderer: compact error format with minimal decoration.
 
     Args:
         doc_path (str | Path): Path to the document.
@@ -131,14 +131,18 @@ def _render_miette(
 
     if extra:
         to_print = Table(
-            box=box.ROUNDED,
+            box=box.SIMPLE,
             border_style="yellow" if is_meta_error else "bright_blue",
             show_header=False,
-            expand=True,
+            expand=False,
             show_lines=True,
         )
+        to_print.add_column(justify="right")
         to_print.add_column()
-        for string in extra:
-            to_print.add_row(string)
-        console.print(Padding(to_print, (0, 4, 0, 4)))
+        for index, string in enumerate(extra):
+            if index == 0:
+                to_print.add_row("[bright_blue][b]help:[/][/]", string)
+            else:
+                to_print.add_row("", string)
+        console.print(Padding(to_print, (0, 2, 0, 1)))
     print()
