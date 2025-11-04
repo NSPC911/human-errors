@@ -20,6 +20,9 @@ dependencies = [
     "rich>=14.2.0",
 ]
 
+[project.scripts]
+parse-file = "human_errors.parse_file:main"
+
 [project.urls]
 Issues = "https://github.com/NSPC911/human-errors/issues"
 Source = "https://github.com/NSPC911/human-errors"
