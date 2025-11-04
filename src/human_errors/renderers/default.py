@@ -122,7 +122,7 @@ def _render_default(
             box=box.ROUNDED,
             border_style="yellow" if is_meta_error else "bright_blue",
             show_header=False,
-            expand=True,
+            expand=False,
             show_lines=True,
         )
         to_print.add_column()
