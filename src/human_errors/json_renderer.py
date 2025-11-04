@@ -15,7 +15,7 @@ except ModuleNotFoundError:
 def json_dump(
     exception: JSONDecodeError,  # pyright: ignore
     doc_path: str | Path,
-    context: int = 2,
+    context: int | None = None,
     extra: Iterable | str | None = None,
     exit_now: bool = False,
 ) -> None:

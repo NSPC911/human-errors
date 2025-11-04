@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 def toml_dump(
     exception: TOMLDecodeError,  # pyright: ignore
     doc_path: str | Path,
-    context: int = 2,
+    context: int = 1,
     extra: Iterable | str | None = None,
     exit_now: bool = False,
 ) -> None:

@@ -3,12 +3,14 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from human_errors.renderers.default import _render_default
+from human_errors.renderers.nu import _render_nu_like
 from human_errors.stack_utils import external_caller_frame
 from human_errors.utils import console
 
 # Registry mapping renderer_type to renderer functions
 _RENDERERS: dict[str, Callable[..., None]] = {
     "default": _render_default,
+    "nu-like": _render_nu_like,
 }
 
 
@@ -17,7 +19,7 @@ def dump(
     cause: str,
     line_number: int,
     column_number: int | None = None,
-    context: int = 2,
+    context: int | None = None,
     extra: Iterable[str] | str | None = None,
 ) -> None:
     """
@@ -110,6 +112,11 @@ def dump(
         exit(1)
 
     # Calculate line range
+    if context is None:
+        if renderer_type == "nu-like":  # noqa: SIM108
+            context = 1
+        else:
+            context = 2
     start_line = max(line_number - context, 1)
     doc_lines_count = len(code_lines)
     end_line = min(line_number + context, doc_lines_count)
