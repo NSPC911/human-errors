@@ -1,10 +1,15 @@
 from os import path
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
 
-from rich.console import Console
+from human_errors.renderers.default import _render_default
+from human_errors.stack_utils import external_caller_frame
+from human_errors.utils import console
 
-console = Console()
+# Registry mapping renderer_type to renderer functions
+_RENDERERS: dict[str, Callable[..., None]] = {
+    "default": _render_default,
+}
 
 
 def dump(
@@ -13,7 +18,7 @@ def dump(
     line_number: int,
     column_number: int | None = None,
     context: int = 2,
-    extra: Iterable | str | None = None,
+    extra: Iterable[str] | str | None = None,
 ) -> None:
     """
     Dump an error message for anything
@@ -28,13 +33,23 @@ def dump(
         - str: single message
         - Iterable: line separated message
     """
-    import inspect
+    import linecache
 
-    from rich import box
-    from rich.padding import Padding
-    from rich.syntax import Syntax
-    from rich.table import Table
-    from rich.text import Text
+    from .utils import renderer_type
+
+    # Get the external frame for error reporting
+    frame = external_caller_frame()
+    if frame is None:
+        # Fallback if stack walking fails
+        import inspect
+
+        frame = inspect.currentframe()
+        if frame and frame.f_back:
+            frame = frame.f_back
+
+    if frame is None:
+        console.print("[red]Error: Could not determine caller frame.[/]")
+        exit(1)
 
     if doc_path == "<string>":
         console.print(
@@ -43,10 +58,7 @@ def dump(
         console.print("")
         console.print(f"[red]Initial error:\n  {cause}[/]")
         exit(1)
-    frame = inspect.currentframe()
-    if frame and frame.f_back:
-        frame = frame.f_back
-    assert frame
+
     if isinstance(doc_path, str):
         doc_path = path.abspath(path.realpath(doc_path))
     elif isinstance(doc_path, Path):
@@ -58,8 +70,6 @@ def dump(
             line_number=frame.f_lineno,
         )
         exit(1)
-
-    import linecache
 
     code_lines = linecache.getlines(str(doc_path))
     code = "".join(code_lines)
@@ -76,6 +86,7 @@ def dump(
         is_meta_error = False
 
     if line_number < 1:
+        assert frame is not None
         dump(
             frame.f_code.co_filename,
             f"[bright_blue]line_number[/] must be larger than or equal to 1. ([red]{line_number}[/] < 1)",
@@ -83,6 +94,7 @@ def dump(
         )
         exit(1)
     elif line_number > len(code_lines):
+        assert frame is not None
         dump(
             frame.f_code.co_filename,
             f"[bright_blue]line_number[/] must be smaller than the number of lines in the document. ([red]{line_number}[/] > {len(code_lines)})",
@@ -102,101 +114,21 @@ def dump(
     doc_lines_count = len(code_lines)
     end_line = min(line_number + context, doc_lines_count)
 
-    has_past: bool = False
-    rjust = len(str(end_line))
+    # fix extra
+    if isinstance(extra, str):
+        extra = [extra]
 
-    # Calculate available width for code
-    prefix_width = rjust + 6  # "╭╴NNN │ "
-    max_code_width = max(console.width - prefix_width, 40)
-
-    syntax = Syntax(
-        code,
-        Syntax.guess_lexer(str(doc_path)),
-        theme="ansi_dark",
-        line_numbers=False,
-        line_range=(start_line, end_line),
-        highlight_lines={line_number},
-        word_wrap=False,
-        code_width=max_code_width,
-        background_color="default",
+    # Select and invoke renderer
+    renderer_type = renderer_type
+    renderer = _RENDERERS.get(renderer_type, _render_default)
+    renderer(
+        doc_path=doc_path,
+        cause=cause,
+        line_number=line_number,
+        column_number=column_number,
+        code=code,
+        start_line=start_line,
+        end_line=end_line,
+        is_meta_error=is_meta_error,
+        extra=extra,
     )
-
-    error_color = "bright_magenta" if is_meta_error else "bright_red"
-    separator_color = "bright_magenta" if is_meta_error else "bright_blue"
-    arrow_color = "bright_magenta" if is_meta_error else "bright_blue"
-
-    console.print(
-        rjust * " "
-        + f"  [{arrow_color}]-->[/] [white]{path.realpath(doc_path)}:{line_number}{':' + str(column_number) if column_number is not None else ''}[/]"
-    )
-
-    segments = list(console.render(syntax, console.options))
-
-    current_line_segments = []
-    rendered_text_lines = []
-
-    for segment in segments:
-        if segment.text == "\n":
-            line_text = Text()
-            for seg in current_line_segments:
-                line_text.append(seg.text, style=seg.style)
-            rendered_text_lines.append(line_text)
-            current_line_segments = []
-        else:
-            current_line_segments.append(segment)
-
-    if current_line_segments:
-        line_text = Text()
-        for seg in current_line_segments:
-            line_text.append(seg.text, style=seg.style)
-        rendered_text_lines.append(line_text)
-
-    line_idx = 0
-    for line_idx, source_line_num in enumerate(range(start_line, end_line + 1)):
-        if line_idx >= len(rendered_text_lines):
-            break
-
-        rendered_line = rendered_text_lines[line_idx]
-        line_idx += 1
-
-        if source_line_num == line_number:
-            # Error line
-            startswith = "╭╴"
-            has_past = True
-            prefix = Text()
-            prefix.append(startswith, style=error_color)
-            prefix.append(str(source_line_num).rjust(rjust), style=error_color)
-            prefix.append(" │ ", style=separator_color)
-            console.print(prefix, rendered_line, sep="")
-            # if column
-            if column_number is not None:
-                prefix = Text()
-                prefix.append("│ ", style=error_color)
-                prefix.append(" " * rjust)
-                prefix.append(" │ ", style=separator_color)
-                prefix.append(" " * (column_number - 1) + "↑", style=error_color)
-                console.print(prefix)
-        else:
-            # Context line
-            startswith = "│ " if has_past else "  "
-            prefix = Text()
-            prefix.append(startswith, style=error_color)
-            prefix.append(str(source_line_num).rjust(rjust), style="bright_blue")
-            prefix.append(" │ ", style=separator_color)
-            console.print(prefix, rendered_line, sep="")
-
-    console.print(f"[{error_color}]╰─{'─' * rjust}─❯[/] {cause}")
-    if extra:
-        to_print = Table(
-            box=box.ROUNDED,
-            border_style="yellow" if is_meta_error else "bright_blue",
-            show_header=False,
-            expand=True,
-            show_lines=True,
-        )
-        to_print.add_column()
-        if isinstance(extra, str):
-            extra = [extra]
-        for string in extra:
-            to_print.add_row(string)
-        console.print(Padding(to_print, (0, 4, 0, 4)))

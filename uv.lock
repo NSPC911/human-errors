@@ -11,11 +11,6 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-all = [
-    { name = "orjson" },
-    { name = "pyyaml" },
-    { name = "toml" },
-]
 dev = [
     { name = "ruff" },
     { name = "ty" },
@@ -34,11 +29,6 @@ yaml = [
 requires-dist = [{ name = "rich", specifier = ">=14.2.0" }]
 
 [package.metadata.requires-dev]
-all = [
-    { name = "orjson", specifier = ">=3.11.4" },
-    { name = "pyyaml", specifier = ">=6.0.0" },
-    { name = "toml", specifier = ">=0.10.2" },
-]
 dev = [
     { name = "ruff", specifier = ">=0.14.2" },
     { name = "ty", specifier = ">=0.0.1a24" },
