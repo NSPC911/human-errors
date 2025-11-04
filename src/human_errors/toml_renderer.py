@@ -52,7 +52,6 @@ def toml_dump(
                 extra=f"Exception type: {type(exception).__name__}\nException: {str(exception)}",
             )
         else:
-            # Fallback if we can't get frame info
             print("Exception missing required attributes (msg, lineno, colno)")
             traceback.print_stack()
             exit(1)

@@ -3,14 +3,13 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from human_errors.renderers.default import _render_default
-from human_errors.renderers.nu import _render_nu_like
+from human_errors.renderers.miette import _render_miette
 from human_errors.stack_utils import external_caller_frame
 from human_errors.utils import console
 
-# Registry mapping renderer_type to renderer functions
 _RENDERERS: dict[str, Callable[..., None]] = {
     "default": _render_default,
-    "nu-like": _render_nu_like,
+    "miette": _render_miette,
 }
 
 
@@ -39,10 +38,8 @@ def dump(
 
     from .utils import renderer_type
 
-    # Get the external frame for error reporting
     frame = external_caller_frame()
     if frame is None:
-        # Fallback if stack walking fails
         import inspect
 
         frame = inspect.currentframe()
@@ -76,7 +73,6 @@ def dump(
     code_lines = linecache.getlines(str(doc_path))
     code = "".join(code_lines)
 
-    # Detect if error from within package
     is_meta_error = False
     try:
         doc_path_normalized = Path(doc_path).resolve()
@@ -84,7 +80,6 @@ def dump(
         human_errors_dir = current_file.parent
         is_meta_error = doc_path_normalized.parent == human_errors_dir
     except Exception:
-        # If we can't determine, treat as regular error
         is_meta_error = False
 
     if line_number < 1:
@@ -105,15 +100,13 @@ def dump(
         exit(1)
 
     if not code:
-        # File doesn't exist or is empty
         console.print("[red]Error: Could not read file.[/]")
         console.print("")
         console.print(f"[red]Initial error:\n\t{cause}[/]")
         exit(1)
 
-    # Calculate line range
     if context is None:
-        if renderer_type == "nu-like":  # noqa: SIM108
+        if renderer_type == "miette":  # noqa: SIM108
             context = 1
         else:
             context = 2
@@ -125,7 +118,6 @@ def dump(
     if isinstance(extra, str):
         extra = [extra]
 
-    # Select and invoke renderer
     renderer_type = renderer_type
     renderer = _RENDERERS.get(renderer_type, _render_default)
     renderer(

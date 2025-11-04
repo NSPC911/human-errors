@@ -1,22 +1,32 @@
-"""
-Example CLI to parse config files with human-errors rendering.
-
-Usage:
-  uv run python examples/parse_file.py path/to/file.[json|toml|yaml|yml] [--renderer default|nu-like]
-
-- Detects format from file extension
-- On parse errors, delegates to the corresponding human_errors renderer
-- Optional --renderer selects the output style used by human_errors
-"""
-
-from __future__ import annotations
-
 import argparse
 import json
 from pathlib import Path
 from typing import Callable
 
 from human_errors import dump, json_dump, toml_dump, utils
+
+try:
+    import orjson  # type: ignore[import-not-found]
+
+    HAS_ORJSON = True
+except ImportError:
+    HAS_ORJSON = False
+
+try:
+    import toml  # type: ignore[import-not-found]
+
+    HAS_TOML = True
+except ImportError:
+    HAS_TOML = False
+
+try:
+    import yaml  # type: ignore
+
+    from human_errors import yaml_dump
+
+    HAS_YAML = True
+except ImportError:
+    HAS_YAML = False
 
 
 def _parse_json(doc_path: Path) -> None:
@@ -26,25 +36,17 @@ def _parse_json(doc_path: Path) -> None:
         doc_path: Path to the JSON document
     """
     try:
-        try:
-            import orjson  # type: ignore[import-not-found]
-
+        if HAS_ORJSON:
             _ = orjson.loads(doc_path.read_bytes())
-        except ModuleNotFoundError:
+        else:
             _ = json.loads(doc_path.read_text(encoding="utf-8"))
-    except Exception as exc:  # Narrow to the known JSON errors
-        try:
-            import orjson  # type: ignore[import-not-found]
-
-            if isinstance(exc, (json.JSONDecodeError, orjson.JSONDecodeError)):
-                json_dump(exc, doc_path, exit_now=True)
-                return
-        except ModuleNotFoundError:
-            pass
-        if isinstance(exc, json.JSONDecodeError):
+    except Exception as exc:
+        if (HAS_ORJSON and isinstance(exc, orjson.JSONDecodeError)) or isinstance(
+            exc, json.JSONDecodeError
+        ):
             json_dump(exc, doc_path, exit_now=True)
-            return
-        raise
+        else:
+            raise
 
 
 def _parse_toml(doc_path: Path) -> None:
@@ -55,16 +57,13 @@ def _parse_toml(doc_path: Path) -> None:
     """
     text = doc_path.read_text(encoding="utf-8")
     try:
-        try:
-            import toml  # type: ignore[import-not-found]
-
+        if HAS_TOML:
             _ = toml.loads(text)
-        except ModuleNotFoundError:
+        else:
             import tomllib
 
             _ = tomllib.loads(text)
     except Exception as exc:
-        # toml_dump validates attributes and prints guidance when needed
         toml_dump(exc, doc_path, exit_now=True)
 
 
@@ -74,13 +73,7 @@ def _parse_yaml(doc_path: Path) -> None:
     Args:
         doc_path: Path to the YAML document
     """
-    # Import PyYAML lazily; if missing, import human_errors.yaml_renderer
-    # which prints a helpful message and exits.
-    try:
-        import yaml  # type: ignore
-
-        from human_errors import yaml_dump
-    except ModuleNotFoundError:
+    if not HAS_YAML:
         dump(__file__, "[blue]pyyaml[/] is not installed!", 80, context=2)
         exit(1)
 
@@ -88,7 +81,6 @@ def _parse_yaml(doc_path: Path) -> None:
     try:
         _ = yaml.safe_load(text)
     except yaml.YAMLError as exc:  # type: ignore[attr-defined]
-        # Defer to the package's YAML renderer for location-aware output
         yaml_dump(exc, doc_path, exit_now=True)
 
 
@@ -102,7 +94,7 @@ def main() -> None:
     parser.add_argument(
         "-r",
         "--renderer",
-        choices=["default", "nu-like"],
+        choices=["default", "miette"],
         default=None,
         help="Renderer style for error output (overrides config)",
     )
@@ -115,7 +107,6 @@ def main() -> None:
     doc_path = Path(args.path)
 
     if not doc_path.exists():
-        # Let human_errors explain unreadable/missing file
         dump(__file__, "File does not exist or is unreadable", line_number=117)
         raise SystemExit(1)
 
@@ -132,8 +123,8 @@ def main() -> None:
         print(f"Unsupported file extension: {ext}. Try .json, .toml, .yaml, or .yml.")
         raise SystemExit(2)
 
-    # Perform the parse. Renderer handles error exits; success prints a confirmation.
     parse_fn(doc_path)
+    print(f"Parsed successfully: {doc_path}")
 
 
 if __name__ == "__main__":

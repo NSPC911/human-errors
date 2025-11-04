@@ -13,7 +13,6 @@ def _is_inside_dir(directory: Path, file_path: Path) -> bool:
     Returns:
         bool: True if file_path is inside or equal to directory, False otherwise.
     """
-    # Normalize and compare using resolved absolute paths
     directory = directory.resolve()
     file_path = file_path.resolve()
     return file_path == directory or directory in file_path.parents
@@ -54,10 +53,8 @@ def external_caller_frame(
             else Path(__file__).resolve().parent
         )
     except Exception:
-        # Fallback to this module's directory if provided path is invalid
         pkg_dir = Path(__file__).resolve().parent
 
-    # Determine starting point: caller of the invoker by default
     frame = start_frame or inspect.currentframe()
     if frame is not None:
         frame = frame.f_back
@@ -66,7 +63,6 @@ def external_caller_frame(
         try:
             frame_path = Path(frame.f_code.co_filename).resolve()
         except Exception:
-            # If path resolution fails, best effort: return this frame
             return frame
 
         if not _is_inside_dir(pkg_dir, frame_path):

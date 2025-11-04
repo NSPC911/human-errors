@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.scripts]
-parse-file = "human_errors.parse_file:main"
+human-errors = "human_errors.parse_file:main"
 
 [project.urls]
 Issues = "https://github.com/NSPC911/human-errors/issues"

@@ -5,7 +5,7 @@ from typing import Iterable
 from human_errors.utils import console
 
 
-def _render_nu_like(
+def _render_miette(
     doc_path: str | Path,
     cause: str,
     line_number: int,
@@ -127,10 +127,7 @@ def _render_nu_like(
             prefix.append(" │ ", style=separator_color)
             console.print(prefix, rendered_line, sep="")
 
-    console.print(
-        (rjust + 2) * " "
-        + f"[{separator_color}]╰────[/]"
-    )
+    console.print((rjust + 2) * " " + f"[{separator_color}]╰────[/]")
 
     if extra:
         to_print = Table(

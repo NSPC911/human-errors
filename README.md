@@ -18,7 +18,7 @@ except orjson.JSONDecodeError as exc:
 ```
 
 Output (error):
-```
+```shell
     --> C:\Users\<user>\absolute\path\to\config.json:19:5
   17 │       "path": "$DESKTOP"
   18 │     }
@@ -42,7 +42,7 @@ except toml.TomlDecodeError as exc:
 ```
 
 Output (error):
-```
+```shell
     --> C:\Users\<user>\path\to\pyproject.toml:9:26
    7 │     { name = "<name>", email = "<email>" }
    8 │ ]
@@ -51,6 +51,31 @@ Output (error):
 │ 10 │ dependencies = [
 │ 11 │     "rich>=14.2.0",
 ╰────❯ Unbalanced quotes
+```
+
+### pyyaml
+
+```py
+from human_errors import yaml_dump
+import yaml
+
+try:
+  with open("config.yaml", "r") as file:
+    config = yaml.safe_load(file.read())
+except yaml.YAMLError as exc:
+  yaml_dump(exc, "config.yaml")
+```
+
+Output (error):
+```shell
+    --> C:\Users\<user>\absolute\path\to\config.yaml:5:3
+  3 │   name: "John"
+  4 │   age: 30
+╭╴5 │   email: john@example.com
+│   │          ↑
+│ 6 │     - item1
+│ 7 │     - item2
+╰────❯ mapping values are not allowed here
 ```
 
 ### Base Renderer (Custom Errors)
@@ -80,7 +105,7 @@ def validate_config(file_path: str):
 ```
 
 Output (error):
-```
+```shell
      --> C:\Users\<user>\absolute\path\to\config.py:15:9
   12 │ DATABASE_HOST = "localhost"
   13 │ DATABASE_PORT = 5432
@@ -98,7 +123,36 @@ Output (error):
     ╰───────────────────────────────────────────────────────────╯
 ```
 
-more soon i guess
+
+### alternate styling
+if you dont like human-error's default styling, a [miette](https://github.com/zkat/miette) like version is also available
+
+```shell
+   ╭─[/path/to/file.json:2:19]
+ 1 │ {
+ 2 │   "name": "Alice",,
+   ·                   ┬
+   ·                   ╰─❯ Expecting property name enclosed in double quotes
+ 3 │   "age": 30
+   ╰────
+```
+
+### CLI Tool
+
+A command-line interface is provided to parse files and render errors:
+
+```sh
+uv human-errors path/to/file.[json|toml|yaml|yml] [--renderer default|miette]
+```
+
+- Automatically detects format from file extension
+- On parse errors, uses human_errors' renderer for neater output
+- Optional `--renderer` selects the output style
+
+Example:
+```sh
+uvx human-errors examples/bad.json
+```
 
 ## contributing
 

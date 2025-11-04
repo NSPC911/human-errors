@@ -38,7 +38,6 @@ def _render_default(
 
     rjust = len(str(end_line))
 
-    # Calculate available width for code
     prefix_width = rjust + 6  # "╭╴NNN │ "
     max_code_width = max(console.width - prefix_width, 40)
 
