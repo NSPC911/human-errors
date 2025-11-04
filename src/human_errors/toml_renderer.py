@@ -45,16 +45,16 @@ def toml_dump(
             assert frame
             dump(
                 doc_path=doc_path,
-                cause="Update to Python 3.14 for [bright_blue]tomllib[/] or use [bright_blue][link=https://pypi.org/project/toml/]toml[/][/] to display the exception",
+                cause=str(exception),
                 line_number=1,
                 column_number=None,
                 context=context,
-                extra=f"Exception type: {type(exception).__name__}\nException: {str(exception)}",
+                extra="Update to Python 3.14 for [bright_blue]tomllib[/] or use [bright_blue][link=https://pypi.org/project/toml/]toml[/][/] to display the exception",
             )
         else:
             print("Exception missing required attributes (msg, lineno, colno)")
             traceback.print_stack()
-            exit(1)
+        exit(1)
         return
     # look ty, i already pre checked it, i don't care, im still
     # gonna ignore your errors, screw you
