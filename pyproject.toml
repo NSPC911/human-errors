@@ -43,6 +43,7 @@ yaml = [
     "pyyaml>=6.0.0",
 ]
 dev = [
+    "poethepoet>=0.37.0",
     "ruff>=0.14.2",
     "ty>=0.0.1a24",
 ]

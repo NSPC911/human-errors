@@ -13,6 +13,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "poethepoet" },
     { name = "ruff" },
     { name = "ty" },
 ]
@@ -34,6 +35,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "poethepoet", specifier = ">=0.37.0" },
     { name = "ruff", specifier = ">=0.14.2" },
     { name = "ty", specifier = ">=0.0.1a24" },
 ]
