@@ -49,7 +49,7 @@ def toml_dump(
                 line_number=1,
                 column_number=None,
                 context=context,
-                extra="Update to Python 3.14 for [bright_blue]tomllib[/] or use [bright_blue][link=https://pypi.org/project/toml/]toml[/][/] to display the exception",
+                extra="Update to Python 3.14 for [bright_blue]tomllib[/] or use [bright_blue][link=https://pypi.org/project/toml/]toml[/][/] to better display the exception",
             )
         else:
             print("Exception missing required attributes (msg, lineno, colno)")
