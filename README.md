@@ -142,7 +142,7 @@ if you dont like human-error's default styling, a [miette](https://github.com/zk
 A command-line interface is provided to parse files and render errors:
 
 ```sh
-uv human-errors path/to/file.[json|toml|yaml|yml] [--renderer default|miette]
+uvx human-errors path/to/file.[json|toml|yaml|yml] [--renderer default|miette]
 ```
 
 - Automatically detects format from file extension
