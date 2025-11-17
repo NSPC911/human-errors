@@ -74,7 +74,7 @@ def _parse_yaml(doc_path: Path) -> None:
         doc_path: Path to the YAML document
     """
     if not HAS_YAML:
-        dump(__file__, "[blue]pyyaml[/] is not installed!", 80, context=2)
+        dump(__file__, "[blue]pyyaml[/] is not installed!", 23, context=2)
         exit(1)
 
     text = doc_path.read_text(encoding="utf-8")
