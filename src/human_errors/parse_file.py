@@ -104,10 +104,11 @@ def main() -> None:
     if args.renderer is not None:
         utils.renderer_type = args.renderer  # type: ignore[assignment]
 
-    doc_path = Path(args.path)
+    doc_path = Path(args.path).expanduser()
+    print(doc_path)
 
     if not doc_path.exists():
-        dump(__file__, "File does not exist or is unreadable", line_number=117)
+        dump(__file__, "File does not exist or is unreadable", line_number=110)
         raise SystemExit(1)
 
     parsers: dict[str, Callable[[Path], None]] = {
@@ -120,7 +121,11 @@ def main() -> None:
     ext = doc_path.suffix.lower()
     parse_fn = parsers.get(ext)
     if parse_fn is None:
-        print(f"Unsupported file extension: {ext}. Try .json, .toml, .yaml, or .yml.")
+        dump(
+            __file__,
+            f"Unsupported file extension: {ext}. Try .json, .toml, .yaml, or .yml.",
+            line_number=122,
+        )
         raise SystemExit(2)
 
     parse_fn(doc_path)
