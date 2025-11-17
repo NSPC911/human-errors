@@ -17,6 +17,7 @@ classifiers = [
   "Topic :: Text Processing"
 ]
 dependencies = [
+    "poethepoet>=0.37.0",
     "rich>=14.2.0",
 ]
 
@@ -77,3 +78,6 @@ preview = true
 possibly-missing-import = "ignore"
 unresolved-reference = "ignore" # handled by ruff
 unresolved-attribute = "ignore"
+
+[tool.poe.tasks]
+run = "human-errors"
