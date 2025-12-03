@@ -14,12 +14,9 @@ classifiers = [
   "Topic :: Utilities",
   "Topic :: File Formats",
   "Topic :: File Formats :: JSON",
-  "Topic :: Text Processing"
+  "Topic :: Text Processing",
 ]
-dependencies = [
-    "poethepoet>=0.37.0",
-    "rich>=14.2.0",
-]
+dependencies = ["poethepoet>=0.37.0", "rich>=14.2.0"]
 
 [project.scripts]
 human-errors = "human_errors.parse_file:main"
@@ -33,19 +30,21 @@ requires = ["uv_build>=0.9.5,<0.10.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-toml = [
-    "toml>=0.9.0",
-]
-orjson = [
-    "orjson>=3.10.0",
-]
-yaml = [
-    "pyyaml>=6.0.0",
-]
+toml = ["toml>=0.9.0"]
+orjson = ["orjson>=3.10.0"]
+yaml = ["pyyaml>=6.0.0"]
+tomli = ["tomli>=2.3.0"]
 dev = [
-    "poethepoet>=0.37.0",
-    "ruff>=0.14.2",
-    "ty>=0.0.1a24",
+  # runner
+  "poethepoet>=0.37.0",
+  # code quality
+  "ruff>=0.14.2",
+  "ty>=0.0.1a24",
+  # install all for local dev
+  "toml>=0.9.0",
+  "orjson>=3.10.0",
+  "pyyaml>=6.0.0",
+  "tomli>=2.3.0",
 ]
 
 [tool.ruff.lint]
@@ -59,7 +58,9 @@ select = [
   "E",
   "F",
   "I",
-  "N801", "N802", "N805",
+  "N801",
+  "N802",
+  "N805",
   "PLE1142",
   "Q",
   "SIM",
@@ -77,8 +78,9 @@ preview = true
 
 [tool.ty.rules]
 possibly-missing-import = "ignore"
-unresolved-reference = "ignore" # handled by ruff
+unresolved-reference = "ignore"    # handled by ruff
 unresolved-attribute = "ignore"
 
 [tool.poe.tasks]
 run = "human-errors"
+check.sequence = [{ cmd = "ty check" }, { cmd = "ruff check" }]

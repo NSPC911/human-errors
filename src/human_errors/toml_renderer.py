@@ -1,16 +1,38 @@
-import tomllib
 import traceback
 from pathlib import Path
 from typing import Iterable, Union
 
 from human_errors.base_renderer import dump
 
+_toml_errors: list[type] = []
+
+try:
+    import tomllib
+
+    _toml_errors.append(tomllib.TOMLDecodeError)
+except ModuleNotFoundError:
+    tomllib = None  # ty: ignore[invalid-assignment]
+
+try:
+    import tomli
+
+    _toml_errors.append(tomli.TOMLDecodeError)
+except ModuleNotFoundError:
+    tomli = None  # ty: ignore[invalid-assignment]
+
 try:
     import toml
 
-    TOMLDecodeError = Union[toml.TomlDecodeError, tomllib.TOMLDecodeError]
+    _toml_errors.append(toml.TomlDecodeError)
 except ModuleNotFoundError:
-    TOMLDecodeError = tomllib.TOMLDecodeError
+    toml = None  # ty: ignore[invalid-assignment]
+
+if not _toml_errors:
+    raise ImportError(
+        "No TOML library available. Install one of: tomli, toml, or use Python 3.11+"
+    )
+
+TOMLDecodeError = Union[tuple(_toml_errors)]
 
 
 def toml_dump(
@@ -49,7 +71,7 @@ def toml_dump(
                 line_number=1,
                 column_number=None,
                 context=context,
-                extra="Update to Python 3.14 for [bright_blue]tomllib[/] or use [bright_blue][link=https://pypi.org/project/toml/]toml[/][/] to better display the exception",
+                extra="Update to Python 3.14 for [bright_blue]tomllib[/], or use [bright_blue][link=https://pypi.org/project/tomli/]tomli[/][/] / [bright_blue][link=https://pypi.org/project/toml/]toml[/][/] to better display the exception",
             )
         else:
             print("Exception missing required attributes (msg, lineno, colno)")
